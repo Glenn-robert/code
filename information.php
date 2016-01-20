@@ -7,7 +7,6 @@ class information
         echo php_uname('s') . PHP_EOL;
         echo php_uname('n') . PHP_EOL;
         echo php_uname('r') . PHP_EOL;
-        echo php_uname('v') . PHP_EOL;
         echo php_uname('m') . PHP_EOL;
     }
 }

